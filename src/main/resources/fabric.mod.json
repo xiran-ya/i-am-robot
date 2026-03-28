@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "i_am_robot",
+	"version": "${version}",
+	"name": "I am Robot",
+	"description": "A client mod that performs automated tasks through script",
+	"authors": [
+		"xiran (汐染)"
+	],
+	"contact": {
+		"homepage": "none yet",
+		"sources": "none yet"
+	},
+	"license": "MIT",
+	"icon": "assets/i_am_robot/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"main": [
+			"dev.xiran.i_am_robot.IAmRobot"
+		],
+		"client": [
+			"dev.xiran.i_am_robot.IAmRobotClient"
+		]
+	},
+	"mixins": [
+		"i_am_robot.mixins.json",
+		{
+			"config": "i_am_robot.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.18.5",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}

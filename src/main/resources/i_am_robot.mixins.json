@@ -1,0 +1,14 @@
+{
+	"required": true,
+	"package": "dev.xiran.i_am_robot.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+      "ExampleMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}
