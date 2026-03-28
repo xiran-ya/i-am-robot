@@ -1,10 +1,21 @@
 package dev.xiran.i_am_robot;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.minecraft.client.Minecraft;
+
+import java.io.File;
 
 public class IAmRobotClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		IAmRobot.LOGGER.info("Hello qwq");
+
+		File configDir = new File(Minecraft.getInstance().gameDirectory + "\\config\\i_am_robot");
+		File scriptDir = new File(configDir, "scripts");
+		if (!configDir.exists()) {
+			if (!configDir.mkdirs()) IAmRobot.LOGGER.error("Failed to create directory: {}", configDir);
+			if (!scriptDir.mkdir()) IAmRobot.LOGGER.error("Fail to create directory: {}", scriptDir);
+		}
+
 	}
 }
