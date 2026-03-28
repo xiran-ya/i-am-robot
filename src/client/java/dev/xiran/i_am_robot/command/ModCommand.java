@@ -10,7 +10,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 
 import java.io.File;
-import java.io.IOException;
 
 public class ModCommand {
     public static void initialize() {
@@ -26,6 +25,7 @@ public class ModCommand {
         });
     }
 
+    // TODO: 排序 File
     public static int list(CommandContext<FabricClientCommandSource> context, String path) {
         File currentPath = (path == null) ? IAmRobotClient.scriptDir : new File(IAmRobotClient.scriptDir, path);
             String[] files = currentPath.list();
