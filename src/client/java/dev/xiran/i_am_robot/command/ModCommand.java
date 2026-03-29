@@ -3,6 +3,7 @@ package dev.xiran.i_am_robot.command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import dev.xiran.i_am_robot.IAmRobotClient;
+import dev.xiran.i_am_robot.core.VirtualMachine;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -23,6 +24,11 @@ public class ModCommand {
                 )
                 .then(ClientCommandManager.literal("help")
                     .executes(ModCommand::help)
+                )
+                .then(ClientCommandManager.literal("run")
+                    .then(ClientCommandManager.argument("file_path", StringArgumentType.greedyString())
+                        .executes(ModCommand::run)
+                    )
                 )
             );
         });
@@ -76,5 +82,24 @@ public class ModCommand {
         return 1;
     }
 
+    public static int run(CommandContext<FabricClientCommandSource> context) {
+        String filePath = StringArgumentType.getString(context, "file_path");
+        File script = new File(IAmRobotClient.scriptDir, filePath);
+        if (script.isFile()) {
+            VirtualMachine vm = VirtualMachine.getInstance();
+            if (vm.isRunning()) {
+                context.getSource().sendError(Component.translatable("command_feedback.i_am_robot.another_script_running").withStyle(ChatFormatting.GOLD));
+                return 0;
+            }
+            vm.setScript(script);
+            Thread thread = new Thread(vm);
+            thread.start();
+            return 1;
+        } else {
+            context.getSource().sendError(Component.translatable("command_feedback.i_am_robot.file_not_found"));
+            return -1;
+        }
+
+    }
 
 }
