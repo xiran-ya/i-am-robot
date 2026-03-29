@@ -1,43 +1,46 @@
 package dev.xiran.i_am_robot.core;
 
+import dev.xiran.i_am_robot.IAmRobot;
+
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class VirtualMachine implements Runnable {
     private static final VirtualMachine INSTANCE = new VirtualMachine();
     private boolean running = false;
     private File script;
-    private String[] instructions;
+    private final String[] instructions = new String[1024];
 
     @Override
     public void run() {
         running = true;
-//        try (FileReader reader = new FileReader(script)) {
-//            char[] buffer = new char[200];
-//            int c = reader.read();
-//            int i = 0;
-//            int j = 0;
-//            while () {
-//                if (c == -1 || (char)c == '\n') {
-//                    instructions[j] = new String(buffer);
-//                    j++;
-//                } else {
-//                    buffer[i] = (char)c;
-//                    i++;
-//                }
-//                c = reader.read();
-//            }
-//        } catch (FileNotFoundException e) {
-//            throw new RuntimeException(e);
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
+        try {
+            Arrays.fill(instructions, null);
+            try (Scanner sc = new Scanner(script)) {
+                int i = 0;
+                while (sc.hasNextLine()) {
+                    String s = sc.nextLine();
+                    if (s.isBlank()) continue;
+                    instructions[i] = s;
+                    i++;
+                }
+            } catch (FileNotFoundException e) {
+                IAmRobot.LOGGER.error("Cannot find the script file", e);
+                // TODO: 向聊天栏发送信息
+                running = false;
+                return;
+            }
+
+            for (String instruction : instructions) {
+                if (instruction == null) break;
+                IAmRobot.LOGGER.info(instruction);
+            }
+        } finally {
+            running = false;
+        }
     }
-
-
 
     public static VirtualMachine getInstance() {
         return INSTANCE;

@@ -3,6 +3,6 @@
   "command.help.i_am_robot.line0": "--Help for all sub commands--",
   "command.help.i_am_robot.help": "◇help: Show this message",
   "command.help.i_am_robot.list": "◇list [path]: Browse files in the script folder (config/i_am_robot/scripts)",
-  "command_feedback.i_am_robot.file_not_found": "File not found",
+  "command_feedback.i_am_robot.file_not_found": "File not found! xwx",
   "command_feedback.i_am_robot.another_script_running": "Another script is still running!"
 }

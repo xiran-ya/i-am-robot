@@ -96,7 +96,7 @@ public class ModCommand {
             thread.start();
             return 1;
         } else {
-            context.getSource().sendError(Component.translatable("command_feedback.i_am_robot.file_not_found"));
+            context.getSource().sendError(Component.translatable("command_feedback.i_am_robot.file_not_found").withStyle(ChatFormatting.GOLD));
             return -1;
         }
 
