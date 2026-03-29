@@ -25,7 +25,6 @@ public class ModCommand {
         });
     }
 
-    // TODO: 排序 File
     public static int list(CommandContext<FabricClientCommandSource> context, String path) {
         File currentPath = (path == null) ? IAmRobotClient.scriptDir : new File(IAmRobotClient.scriptDir, path);
             String[] files = currentPath.list();
@@ -34,8 +33,9 @@ public class ModCommand {
                 return 0;
             }
             context.getSource().sendFeedback(Component.literal("============").withStyle(ChatFormatting.GRAY));
-            for (String file : files) {
-                context.getSource().sendFeedback(Component.literal(file).withStyle(ChatFormatting.GRAY));
+            sortFiles(currentPath, files);
+            for (String f : files) {
+                context.getSource().sendFeedback(Component.literal(f).withStyle(ChatFormatting.GRAY));
             }
             return 1;
     }
@@ -44,6 +44,25 @@ public class ModCommand {
     }
     public static int listWithPath(CommandContext<FabricClientCommandSource> context) {
         return list(context, StringArgumentType.getString(context, "path"));
+    }
+    private static void sortFiles(File root, String[] files) {
+        for (int i = 0; i < files.length; i++) {
+            File file = new File(root, files[i]);
+            if (file.isDirectory()) {
+                files[i] = "<dir> " + files[i];
+            }
+        }
+
+        // 排序
+        for (int i = 0; i < files.length - 1; i++) {
+            for (int j = 0; j < files.length - i - 1; j++) {
+                if (files[j].charAt(0) != '<' && files[j + 1].charAt(0) == '<') {
+                    var temp = files[j];
+                    files[j] = files[j + 1];
+                    files[j + 1] = temp;
+                }
+            }
+        }
     }
 
 
