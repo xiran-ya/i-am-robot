@@ -1,3 +1,6 @@
 {
-  "command_feedback.i_am_robot.io_exception": "Error while reading the directory (Do they exist?)"
+  "command_feedback.i_am_robot.io_exception": "Error while reading the directory (Do they exist?)",
+  "command.help.i_am_robot.line0": "--Help for all sub commands--",
+  "command.help.i_am_robot.help": "◇help: Show this message",
+  "command.help.i_am_robot.list": "◇list [path]: Browse files in the script folder (config/i_am_robot/scripts)"
 }
