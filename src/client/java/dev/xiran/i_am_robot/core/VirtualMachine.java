@@ -8,14 +8,16 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 public class VirtualMachine implements Runnable {
-    private static final VirtualMachine INSTANCE = new VirtualMachine();
+    static final VirtualMachine INSTANCE = new VirtualMachine();
     private boolean running = false;
     private File script;
     private final String[] instructions = new String[1024];
+    private int programCounter;
 
     @Override
     public void run() {
         running = true;
+        programCounter = 0;
         try {
             Arrays.fill(instructions, null);
             try (Scanner sc = new Scanner(script)) {
@@ -28,14 +30,12 @@ public class VirtualMachine implements Runnable {
                 }
             } catch (FileNotFoundException e) {
                 IAmRobot.LOGGER.error("Cannot find the script file", e);
-                // TODO: 向聊天栏发送信息
                 running = false;
                 return;
             }
 
-            for (String instruction : instructions) {
-                if (instruction == null) break;
-                IAmRobot.LOGGER.info(instruction);
+            while (Parser.evaluate(instructions[programCounter])) {
+                programCounter++;
             }
         } finally {
             running = false;
@@ -52,5 +52,15 @@ public class VirtualMachine implements Runnable {
 
     public void setScript(File script) {
         this.script = script;
+    }
+
+    /**
+     * 跳转到指定的位置
+     * @param n 跳转后执行的下一条指令
+     * @throws IllegalArgumentException 若 n < 0
+     */
+    public void jump(int n) {
+        if (n < 0) throw new IllegalArgumentException("Cannot jump to address that are less than 0");
+        programCounter = n - 1;
     }
 }
