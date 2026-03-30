@@ -2,13 +2,12 @@ package dev.xiran.i_am_robot.core;
 
 /**
  * 语句中的一个 Token
- * @param <C> Token 包含的内容的类型 (String, Integer 等)
  */
-public class Token<C> {
+public class Token {
     Type type;
-    C value;
+    Object value;
 
-    public Token(Type type, C value) {
+    public Token(Type type, Object value) {
         this.type = type;
         this.value = value;
     }
@@ -17,8 +16,36 @@ public class Token<C> {
         return type;
     }
 
-    public C getValue() {
-        return value;
+    public String getString() {
+        if (value instanceof String) {
+            return (String) value;
+        } else {
+            throw new ClassCastException("Failed to cast to String");
+        }
+    }
+
+    public KeyWord getKeyWord() {
+        if (value instanceof KeyWord) {
+            return (KeyWord) value;
+        } else {
+            throw new ClassCastException("Failed to cast to KeyWord");
+        }
+    }
+
+    public int getInt() {
+        if (value instanceof Integer) {
+            return (int) value;
+        } else {
+            throw new ClassCastException("Failed to cast to int");
+        }
+    }
+
+    public double getDouble() {
+        if (value instanceof Double) {
+            return (double) value;
+        } else {
+            throw new ClassCastException("Failed to cast to double");
+        }
     }
 
     public enum Type {
