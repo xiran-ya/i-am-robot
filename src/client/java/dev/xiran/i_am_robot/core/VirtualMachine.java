@@ -5,6 +5,7 @@ import dev.xiran.i_am_robot.IAmRobot;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class VirtualMachine implements Runnable {
@@ -13,6 +14,7 @@ public class VirtualMachine implements Runnable {
     private File script;
     private final String[] instructions = new String[1024];
     private int programCounter;
+    HashMap<String, Object> variableTable = new HashMap<>();
 
     @Override
     public void run() {
@@ -34,8 +36,13 @@ public class VirtualMachine implements Runnable {
                 return;
             }
 
-            while (Parser.evaluate(instructions[programCounter])) {
-                programCounter++;
+            try {
+                while (AssemblerParser.evaluate(instructions[programCounter])) {
+                    programCounter++;
+                }
+            } catch (Exception e) {
+                // TODO: 异常处理
+                e.printStackTrace();
             }
         } finally {
             running = false;
@@ -62,5 +69,20 @@ public class VirtualMachine implements Runnable {
     public void jump(int n) {
         if (n < 0) throw new IllegalArgumentException("Cannot jump to address that are less than 0");
         programCounter = n - 1;
+    }
+
+    public void createVariable(String name, Object value) {
+        variableTable.put(name, value);
+    }
+
+    public Object getVariable(String name) {
+        Object value = variableTable.get(name);
+        if (value == null) throw new VMRuntimeException(String.format("Variable \"%s\" is not defined", name));
+        return value;
+    }
+
+    public void setVariable(String name, Object newValue) {
+        Object o = variableTable.replace(name, newValue);
+        if (o == null) throw new VMRuntimeException(String.format("Variable \"%s\" is not defined", name));
     }
 }
