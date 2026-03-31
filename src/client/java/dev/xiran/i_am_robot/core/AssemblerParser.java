@@ -1,5 +1,9 @@
 package dev.xiran.i_am_robot.core;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
+
 /**
  * 一个脚本解释器，使用简易的类汇编语言
  */
@@ -36,8 +40,11 @@ public class AssemblerParser {
                         throw new VMRuntimeException("Cannot add with none-number variable");
                     }
                 case "log":
-                    Object obj = VirtualMachine.INSTANCE.getVariable(tokens[1]);
-                    // TODO: 发送消息
+                    LocalPlayer player = Minecraft.getInstance().player;
+                    if (player != null) {
+                        Object obj = VirtualMachine.INSTANCE.getVariable(tokens[1]);
+                        player.displayClientMessage(Component.literal(obj.toString()), false);
+                    }
                     return true;
                 case "halt":
                     return false;
