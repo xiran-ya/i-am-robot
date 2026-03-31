@@ -17,14 +17,22 @@ public class AssemblerParser {
                 case "add":
                     Object var0 = VirtualMachine.INSTANCE.getVariable(tokens[1]);
                     Object var1 = VirtualMachine.INSTANCE.getVariable(tokens[2]);
-                    if (var0 instanceof Integer && var1 instanceof Integer) {
-                        VirtualMachine.INSTANCE.setVariable(tokens[3], (int) var0 + (int) var1);
+                    try {
+                        if (var0 instanceof Integer) {
+                            if (var1 instanceof Integer) {
+                                VirtualMachine.INSTANCE.setVariable(tokens[3], (int) var0 + (int) var1);
+                            } else {
+                                VirtualMachine.INSTANCE.setVariable(tokens[3], (int) var0 + (double) var1);
+                            }
+                        } else {
+                            if (var1 instanceof Integer) {
+                                VirtualMachine.INSTANCE.setVariable(tokens[3], (double) var0 + (int) var1);
+                            } else {
+                                VirtualMachine.INSTANCE.setVariable(tokens[3], (double) var0 + (double) var1);
+                            }
+                        }
                         return true;
-                    } else if (var0 instanceof Number && var1 instanceof Number) {
-                        // FIXME: 抛出CCE
-                        VirtualMachine.INSTANCE.setVariable(tokens[3], (double) var0 + (double) var1);
-                        return true;
-                    } else {
+                    } catch (ClassCastException e) {
                         throw new VMRuntimeException("Cannot add with none-number variable");
                     }
                 case "log":
