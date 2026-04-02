@@ -1,7 +1,9 @@
 package dev.xiran.i_am_robot;
 
 import dev.xiran.i_am_robot.command.ModCommand;
+import dev.xiran.i_am_robot.core.PlayerActionUtil;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 
 import java.io.File;
@@ -22,6 +24,8 @@ public class IAmRobotClient implements ClientModInitializer {
 		}
 
 		ModCommand.initialize();
+
+		ClientTickEvents.END_CLIENT_TICK.register(PlayerActionUtil::sendMessageOnTick);
 
 	}
 }
