@@ -1,8 +1,9 @@
 package dev.xiran.i_am_robot.core;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+
+import java.util.IllegalFormatException;
 
 /**
  * 一个脚本解释器，使用简易的类汇编语言
@@ -17,6 +18,15 @@ public class AssemblerParser {
                     return true;
                 case "double":
                     VirtualMachine.INSTANCE.createVariable(tokens[1], Double.parseDouble(tokens[2]));
+                    return true;
+                case "string":
+                    StringBuilder builder = new StringBuilder();
+                    for (int i = 2; i < tokens.length; i++) {
+                        builder.append(tokens[i]);
+                        builder.append(' ');
+                    }
+                    if (!builder.isEmpty()) builder.deleteCharAt(builder.length() - 1);
+                    VirtualMachine.INSTANCE.createVariable(tokens[1], builder.toString());
                     return true;
                 case "add":
                     Object var0 = VirtualMachine.INSTANCE.getVariable(tokens[1]);
@@ -39,14 +49,29 @@ public class AssemblerParser {
                     } catch (ClassCastException e) {
                         throw new VMRuntimeException("Cannot add with none-number variable");
                     }
-                case "log":
-                    LocalPlayer player = Minecraft.getInstance().player;
-                    if (player != null) {
-                        Object obj = VirtualMachine.INSTANCE.getVariable(tokens[1]);
-                        player.displayClientMessage(Component.literal(obj.toString()), false);
+                case "format":
+                    Object format = VirtualMachine.INSTANCE.getVariable(tokens[1]);
+                    if (format instanceof String) {
+                        try {
+                            Object[] formatArgs = new Object[tokens.length - 2];
+                            for (int i = 0; i < tokens.length - 2; i++) {
+                                formatArgs[i] = VirtualMachine.INSTANCE.getVariable(tokens[i + 2]);
+                            }
+                            String formattedString = String.format((String) format, formatArgs);
+                            VirtualMachine.INSTANCE.setVariable(tokens[1], formattedString);
+                            return true;
+                        } catch (IllegalFormatException e) {
+                            throw new VMRuntimeException("Illegal format string syntax");
+                        }
+                    } else {
+                        throw new VMRuntimeException("Format can only be used on string variable");
                     }
+                case "log":
+                    Object obj = VirtualMachine.INSTANCE.getVariable(tokens[1]);
+                    PlayerActionUtil.sendClientMessage(Component.literal(obj.toString()));
                     return true;
                 case "halt":
+                    PlayerActionUtil.sendClientMessage(Component.translatable("message.i_am_robot.vm.halt").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
                     return false;
                 default:
                     throw new SyntaxException("Invalid keyword");
