@@ -31,22 +31,18 @@ public class AssemblerParser {
                     return true;
                 }
                 case "string", "String" -> {
-                    Matcher matcher = stringPattern.matcher(instruction);
-                    if (!matcher.find()) throw new SyntaxException("Missing argument, string expected");
-                    VirtualMachine.INSTANCE.createVariable(tokens[1], instruction.substring(matcher.start() + 1, matcher.end() - 1));
+                    VirtualMachine.INSTANCE.createVariable(tokens[1], findString(instruction));
                     return true;
                 }
                 case "mov" -> {
                     Object sourceObj;
                     if (tokens[1].charAt(0) == '"') {
-                        Matcher matcher = stringPattern.matcher(instruction);
-                        if (!matcher.find()) throw new SyntaxException("Missing argument, string expected");
-                        sourceObj = instruction.substring(matcher.start() + 1, matcher.end() - 1);
+                        sourceObj = findString(instruction);
                     } else {
                         sourceObj = parseValue(tokens[1]);
                     }
 
-                    VirtualMachine.INSTANCE.setVariable(tokens[2], sourceObj);
+                    VirtualMachine.INSTANCE.setVariable(tokens[tokens.length - 1], sourceObj);
                     return true;
                 }
                 case "add" -> {
@@ -91,7 +87,13 @@ public class AssemblerParser {
                     }
                 }
                 case "log" -> {
-                    PlayerActionUtil.sendClientMessage(Component.literal(parseValue(tokens[1]).toString()));
+                    String message;
+                    if (tokens[1].charAt(0) == '"') {
+                        message = findString(instruction);
+                    } else {
+                        message = parseValue(tokens[1]).toString();
+                    }
+                    PlayerActionUtil.sendClientMessage(Component.literal(message));
                     return true;
                 }
                 case "halt" -> {
@@ -123,5 +125,11 @@ public class AssemblerParser {
         } else {
             return VirtualMachine.INSTANCE.getVariable(string);
         }
+    }
+
+    private static String findString(String instruction) throws SyntaxException {
+        Matcher matcher = stringPattern.matcher(instruction);
+        if (!matcher.find()) throw new SyntaxException("Missing argument, string expected");
+        return instruction.substring(matcher.start() + 1, matcher.end() - 1);
     }
 }
