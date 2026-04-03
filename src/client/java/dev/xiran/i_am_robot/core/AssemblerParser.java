@@ -25,6 +25,7 @@ public class AssemblerParser {
                     VirtualMachine.INSTANCE.createVariable(tokens[1], Double.parseDouble(tokens[2]));
                     return true;
                 case "string":
+                case "String":
                     StringBuilder builder = new StringBuilder();
                     for (int i = 2; i < tokens.length; i++) {
                         builder.append(tokens[i]);
@@ -35,7 +36,17 @@ public class AssemblerParser {
                     return true;
                 case "add":
                     Object var0 = VirtualMachine.INSTANCE.getVariable(tokens[1]);
-                    Object var1 = VirtualMachine.INSTANCE.getVariable(tokens[2]);
+                    Object var1;
+                    if (tokens[2].matches("^[0-9+-].*")) {
+                        if (tokens[2].contains(".")) {
+                            var1 = Double.parseDouble(tokens[2]);
+                        } else {
+                            var1 = Integer.parseInt(tokens[2]);
+                        }
+                    } else {
+                        var1 = VirtualMachine.INSTANCE.getVariable(tokens[2]);
+                    }
+
                     try {
                         if (var0 instanceof Integer) {
                             if (var1 instanceof Integer) {
