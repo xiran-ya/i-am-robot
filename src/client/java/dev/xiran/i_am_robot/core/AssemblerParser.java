@@ -34,6 +34,10 @@ public class AssemblerParser {
                     if (!builder.isEmpty()) builder.deleteCharAt(builder.length() - 1);
                     VirtualMachine.INSTANCE.createVariable(tokens[1], builder.toString());
                     return true;
+                case "mov":
+                    Object sourceObj = VirtualMachine.INSTANCE.getVariable(tokens[1]);
+                    VirtualMachine.INSTANCE.setVariable(tokens[2], sourceObj);
+                    return true;
                 case "add":
                     Object var0 = VirtualMachine.INSTANCE.getVariable(tokens[1]);
                     Object var1;
