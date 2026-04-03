@@ -74,7 +74,7 @@ public class AssemblerParser {
                         try {
                             Object[] formatArgs = new Object[tokens.length - 2];
                             for (int i = 0; i < tokens.length - 2; i++) {
-                                formatArgs[i] = parseValue(tokens[1 + 2]);
+                                formatArgs[i] = parseValue(tokens[i + 2]);
                             }
                             String formattedString = String.format((String) format, formatArgs);
                             VirtualMachine.INSTANCE.setVariable(tokens[1], formattedString);
