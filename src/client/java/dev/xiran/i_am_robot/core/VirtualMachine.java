@@ -1,6 +1,8 @@
 package dev.xiran.i_am_robot.core;
 
 import dev.xiran.i_am_robot.IAmRobot;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -41,8 +43,10 @@ public class VirtualMachine implements Runnable {
                     programCounter++;
                 }
             } catch (Exception e) {
-                // TODO: 异常处理
-                e.printStackTrace();
+                PlayerActionUtil.sendClientMessage(Component.translatable("message.i_am_robot.vm.exception").withStyle(ChatFormatting.RED));
+                String message = e.getClass().getSimpleName() + ": " + e.getMessage();
+                PlayerActionUtil.sendClientMessage(Component.literal(message).withStyle(ChatFormatting.RED));
+                PlayerActionUtil.sendClientMessage(Component.literal("at <main>: " + programCounter).withStyle(ChatFormatting.RED));
             }
         } finally {
             running = false;

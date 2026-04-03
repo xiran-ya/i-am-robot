@@ -10,6 +10,11 @@ import java.util.IllegalFormatException;
  */
 public class AssemblerParser {
     public static boolean evaluate(String instruction) throws SyntaxException {
+        if (instruction == null) {
+            PlayerActionUtil.sendClientMessage(Component.translatable("message.i_am_robot.vm.null_instruction").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC));
+            return false;
+        }
+
         String[] tokens = instruction.trim().split(" ");
         try {
             switch (tokens[0]) {
