@@ -22,8 +22,8 @@ public class VirtualMachine implements Runnable {
     public void run() {
         running = true;
         programCounter = 0;
+        Arrays.fill(instructions, null);
         try {
-            Arrays.fill(instructions, null);
             try (Scanner sc = new Scanner(script)) {
                 int i = 0;
                 while (sc.hasNextLine()) {
@@ -49,6 +49,7 @@ public class VirtualMachine implements Runnable {
                 PlayerActionUtil.sendClientMessage(Component.literal("at <main>: " + programCounter).withStyle(ChatFormatting.RED));
             }
         } finally {
+            variableTable.clear();
             running = false;
         }
     }
