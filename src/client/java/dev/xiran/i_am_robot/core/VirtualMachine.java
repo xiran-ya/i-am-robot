@@ -9,6 +9,8 @@ import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class VirtualMachine implements Runnable {
     static final VirtualMachine INSTANCE = new VirtualMachine();
@@ -18,23 +20,18 @@ public class VirtualMachine implements Runnable {
     private int programCounter;
     HashMap<String, Object> variableTable = new HashMap<>();
 
+    public static final Pattern commentPattern = Pattern.compile("//");
+
     @Override
     public void run() {
         running = true;
         programCounter = 0;
         Arrays.fill(instructions, null);
         try {
-            try (Scanner sc = new Scanner(script)) {
-                int i = 0;
-                while (sc.hasNextLine()) {
-                    String s = sc.nextLine();
-                    if (s.isBlank()) continue;
-                    instructions[i] = s;
-                    i++;
-                }
+            try {
+                readScript();
             } catch (FileNotFoundException e) {
-                IAmRobot.LOGGER.error("Cannot find the script file", e);
-                running = false;
+                IAmRobot.LOGGER.error("Cannot find script file", e);
                 return;
             }
 
@@ -51,6 +48,24 @@ public class VirtualMachine implements Runnable {
         } finally {
             variableTable.clear();
             running = false;
+        }
+    }
+
+    private void readScript() throws FileNotFoundException {
+        try (Scanner sc = new Scanner(script)) {
+            int i = 0;
+            while (sc.hasNextLine()) {
+                String s = sc.nextLine();
+
+                Matcher matcher = commentPattern.matcher(s);
+                if (matcher.find()) {
+                    s = s.substring(0, matcher.start());
+                }
+
+                if (s.isBlank()) continue;
+                instructions[i] = s.trim();
+                i++;
+            }
         }
     }
 

@@ -19,7 +19,7 @@ public class AssemblerParser {
             return false;
         }
 
-        String[] tokens = instruction.trim().split(" +");
+        String[] tokens = instruction.split(" +");
         try {
             switch (tokens[0]) {
                 case "int" -> {
