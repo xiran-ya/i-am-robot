@@ -144,7 +144,7 @@ public class AssemblerParser {
                             throw new VMRuntimeException("Illegal format string syntax");
                         }
                     } else {
-                        throw new VMRuntimeException("Format can only be used on string variable");
+                        throw new TypeException("Format can only be used on string variable");
                     }
                 }
                 case "log" -> {
@@ -161,7 +161,7 @@ public class AssemblerParser {
                     PlayerActionUtil.sendClientMessage(Component.translatable("message.i_am_robot.vm.halt").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
                     return false;
                 }
-                default -> throw new SyntaxException("Invalid keyword");
+                default -> throw new SyntaxException("Invalid keyword: " + tokens[0]);
             }
         } catch (ArrayIndexOutOfBoundsException e) {
             throw new SyntaxException("Instruction is missing argument");
