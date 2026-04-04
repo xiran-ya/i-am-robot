@@ -49,7 +49,7 @@ public class AssemblerParser {
                 case "call" -> {
                     Object[] args = new Object[tokens.length - 3];
                     for (int i = 0; i < tokens.length - 3; i++) {
-                        args[i] = VirtualMachine.INSTANCE.getVariable(tokens[i + 3]);
+                        args[i] = parseValue(tokens[i + 3]);
                     }
                     FunctionField functionField = new FunctionField(VirtualMachine.INSTANCE.programCounter, tokens[2].charAt(0) == '-' ? null : tokens[2], args);
 
@@ -58,12 +58,14 @@ public class AssemblerParser {
                     return true;
                 }
                 case "return" -> {
+                    Object returnValue = null;
+                    if (tokens.length > 1) returnValue = parseValue(tokens[1]);
+
                     FunctionField functionField = VirtualMachine.INSTANCE.callStack.pop();
                     VirtualMachine.INSTANCE.programCounter = functionField.returnAddress;
 
                     if (functionField.returnValueTo != null) {
-                        Object returnValue = functionField.variableTable.get(tokens[1]);
-                        if (returnValue == null) throw new VMRuntimeException(String.format("Variable \"%s\" is not defined", tokens[1]));
+                        if (returnValue == null) throw new VMRuntimeException("Function did not return desired value");
                         VirtualMachine.INSTANCE.setVariable(functionField.returnValueTo, returnValue);
                     }
                     return true;
