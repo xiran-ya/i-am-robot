@@ -48,24 +48,81 @@ public class AssemblerParser {
                 case "add" -> {
                     Object var0 = VirtualMachine.INSTANCE.getVariable(tokens[1]);
                     Object var1 = parseValue(tokens[2]);
-
-                    try {
-                        if (var0 instanceof Integer) {
-                            if (var1 instanceof Integer) {
-                                VirtualMachine.INSTANCE.setVariable(tokens[3], (int) var0 + (int) var1);
-                            } else {
-                                VirtualMachine.INSTANCE.setVariable(tokens[3], (int) var0 + (double) var1);
-                            }
+                    Object result = calculate(var0, var1,
+                        Integer::sum,
+                        Double::sum,
+                        Double::sum,
+                        Double::sum
+                    );
+                    VirtualMachine.INSTANCE.setVariable(tokens[3], result);
+                    return true;
+                }
+                case "jumpIf" -> {
+                    if (tokens.length == 3) {
+                        Object condition = parseValue(tokens[1]);
+                        if (condition instanceof Integer) {
+                            if ((int) condition != 0) VirtualMachine.INSTANCE.jumpToLabel(tokens[2]);
+                            return true;
                         } else {
-                            if (var1 instanceof Integer) {
-                                VirtualMachine.INSTANCE.setVariable(tokens[3], (double) var0 + (int) var1);
-                            } else {
-                                VirtualMachine.INSTANCE.setVariable(tokens[3], (double) var0 + (double) var1);
-                            }
+                            throw new IllegalArgumentException("Cannot use non-int value as condition");
                         }
+                    } else {
+                        Object var0 = VirtualMachine.INSTANCE.getVariable(tokens[1]);
+                        Object var1 = parseValue(tokens[3]);
+                        String operation = tokens[2];
+                        boolean result = switch (operation) {
+                            case "==" -> {
+                                yield (boolean) calculate(var0, var1,
+                                    Integer::equals,
+                                    (v0, v1) -> false,
+                                    (v0, v1) -> false,
+                                    Double::equals
+                                );
+                            }
+                            case "!=" -> {
+                                yield (boolean) calculate(var0, var1,
+                                    (v0, v1) -> !v0.equals(v1),
+                                    (v0, v1) -> true,
+                                    (v0, v1) -> true,
+                                    (v0, v1) -> !v0.equals(v1)
+                                );
+                            }
+                            case ">" -> {
+                                yield (boolean) calculate(var0, var1,
+                                    (v0, v1) -> v0 > v1,
+                                    (v0, v1) -> v0 > v1,
+                                    (v0, v1) -> v0 > v1,
+                                    (v0, v1) -> v0 > v1
+                                );
+                            }
+                            case ">=" -> {
+                                yield (boolean) calculate(var0, var1,
+                                    (v0, v1) -> v0 >= v1,
+                                    (v0, v1) -> v0 >= v1,
+                                    (v0, v1) -> v0 >= v1,
+                                    (v0, v1) -> v0 >= v1
+                                );
+                            }
+                            case "<" -> {
+                                yield (boolean) calculate(var0, var1,
+                                    (v0, v1) -> v0 < v1,
+                                    (v0, v1) -> v0 < v1,
+                                    (v0, v1) -> v0 < v1,
+                                    (v0, v1) -> v0 < v1
+                                );
+                            }
+                            case "<=" -> {
+                                yield (boolean) calculate(var0, var1,
+                                    (v0, v1) -> v0 <= v1,
+                                    (v0, v1) -> v0 <= v1,
+                                    (v0, v1) -> v0 <= v1,
+                                    (v0, v1) -> v0 <= v1
+                                );
+                            }
+                            default -> throw new SyntaxException("Invalid compare operator: " + operation);
+                        };
+                        if (result) VirtualMachine.INSTANCE.jumpToLabel(tokens[4]);
                         return true;
-                    } catch (ClassCastException e) {
-                        throw new VMRuntimeException("Cannot add with none-number variable");
                     }
                 }
                 case "jump" -> {
@@ -113,6 +170,23 @@ public class AssemblerParser {
         }
     }
 
+    private static Object calculate(Object arg0, Object arg1, DualOperation<Integer, Integer> opII, DualOperation<Integer, Double> opID, DualOperation<Double, Integer> opDI, DualOperation<Double, Double> opDD) {
+        if (arg0 instanceof Integer int0) {
+            if (arg1 instanceof Integer int1) {
+                return opII.apply(int0, int1);
+            } else if (arg1 instanceof Double double1) {
+                return opID.apply(int0, double1);
+            }
+        } else if (arg0 instanceof Double double0) {
+            if (arg1 instanceof Integer int1) {
+                return opDI.apply(double0, int1);
+            } else if (arg1 instanceof Double double1) {
+                return opDD.apply(double0, double1);
+            }
+        }
+        throw new TypeException("Cannot perform calculation with non-number variable");
+    }
+    
     /**
      * 解析字符串对应的值
      * @param string 输入字符串，可以是字面量或标识符
