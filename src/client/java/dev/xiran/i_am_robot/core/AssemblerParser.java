@@ -68,6 +68,10 @@ public class AssemblerParser {
                         throw new VMRuntimeException("Cannot add with none-number variable");
                     }
                 }
+                case "jump" -> {
+                    VirtualMachine.INSTANCE.jumpToLabel(tokens[1]);
+                    return true;
+                }
                 case "format" -> {
                     Object format = VirtualMachine.INSTANCE.getVariable(tokens[1]);
                     if (format instanceof String) {

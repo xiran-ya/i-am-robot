@@ -21,6 +21,8 @@ public class VirtualMachine implements Runnable {
     HashMap<String, Object> variableTable = new HashMap<>();
 
     public static final Pattern commentPattern = Pattern.compile("//");
+    public static final Pattern labelPattern = Pattern.compile("^label ");
+    HashMap<String, Integer> labelAddresses = new HashMap<>();
 
     @Override
     public void run() {
@@ -32,6 +34,10 @@ public class VirtualMachine implements Runnable {
                 readScript();
             } catch (FileNotFoundException e) {
                 IAmRobot.LOGGER.error("Cannot find script file", e);
+                return;
+            } catch (SyntaxException e) {
+                PlayerActionUtil.sendClientMessage(Component.translatable("message.i_am_robot.vm.syntax_error").withStyle(ChatFormatting.RED));
+                PlayerActionUtil.sendClientMessage(Component.literal(e.getMessage()).withStyle(ChatFormatting.RED));
                 return;
             }
 
@@ -47,24 +53,33 @@ public class VirtualMachine implements Runnable {
             }
         } finally {
             variableTable.clear();
+            labelAddresses.clear();
             running = false;
         }
     }
 
-    private void readScript() throws FileNotFoundException {
+    private void readScript() throws FileNotFoundException, SyntaxException {
         try (Scanner sc = new Scanner(script)) {
             int i = 0;
             while (sc.hasNextLine()) {
                 String s = sc.nextLine();
 
-                Matcher matcher = commentPattern.matcher(s);
-                if (matcher.find()) {
-                    s = s.substring(0, matcher.start());
+                Matcher commentMatcher = commentPattern.matcher(s);
+                if (commentMatcher.find()) {
+                    s = s.substring(0, commentMatcher.start());
                 }
 
                 if (s.isBlank()) continue;
-                instructions[i] = s.trim();
-                i++;
+                s = s.trim();
+
+                Matcher labelMatcher = labelPattern.matcher(s);
+                if (labelMatcher.find()) {
+                    String labelName = s.substring(labelMatcher.end());
+                    if (labelAddresses.put(labelName, i) != null) throw new SyntaxException("Duplicate label name: " + labelName);
+                } else {
+                    instructions[i] = s;
+                    i++;
+                }
             }
         }
     }
@@ -89,6 +104,17 @@ public class VirtualMachine implements Runnable {
     public void jump(int n) {
         if (n < 0) throw new IllegalArgumentException("Cannot jump to address that are less than 0");
         programCounter = n - 1;
+    }
+
+    /**
+     * 跳转到指定的标签
+     * @param label 目的标签
+     * @throws IllegalArgumentException 若指定的标签不存在
+     */
+    public void jumpToLabel(String label) {
+        Integer i = labelAddresses.get(label);
+        if (i == null) throw new IllegalArgumentException(String.format("No matching label for \"%s\"", label));
+        jump(i);
     }
 
     public void createVariable(String name, Object value) {

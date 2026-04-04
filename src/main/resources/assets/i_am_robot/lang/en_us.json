@@ -7,5 +7,6 @@
   "command_feedback.i_am_robot.another_script_running": "Another script is still running!",
   "message.i_am_robot.vm.halt": "Script has finished running",
   "message.i_am_robot.vm.null_instruction": "[WARN] Script exited because no halt was found",
-  "message.i_am_robot.vm.exception": "Exception while running script:"
+  "message.i_am_robot.vm.exception": "Exception while running script:",
+  "message.i_am_robot.vm.syntax_error": "Syntax error: "
 }
