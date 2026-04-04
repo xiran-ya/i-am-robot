@@ -24,15 +24,15 @@ public class AssemblerParser {
         try {
             switch (tokens[0]) {
                 case "int" -> {
-                    VirtualMachine.INSTANCE.createVariable(tokens[1], Integer.parseInt(tokens[2]));
+                    VirtualMachine.INSTANCE.createVariable(tokens[1], tokens.length == 2 ? 0 : Integer.parseInt(tokens[2]));
                     return true;
                 }
                 case "double" -> {
-                    VirtualMachine.INSTANCE.createVariable(tokens[1], Double.parseDouble(tokens[2]));
+                    VirtualMachine.INSTANCE.createVariable(tokens[1], tokens.length == 2 ? 0.0 : Double.parseDouble(tokens[2]));
                     return true;
                 }
                 case "string", "String" -> {
-                    VirtualMachine.INSTANCE.createVariable(tokens[1], findString(instruction));
+                    VirtualMachine.INSTANCE.createVariable(tokens[1], tokens.length == 2 ? "" : findString(instruction));
                     return true;
                 }
                 case "mov" -> {
