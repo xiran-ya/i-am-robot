@@ -6,9 +6,7 @@ import net.minecraft.network.chat.Component;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Scanner;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,8 +15,9 @@ public class VirtualMachine implements Runnable {
     private boolean running = false;
     private File script;
     private final String[] instructions = new String[1024];
-    private int programCounter;
-    HashMap<String, Object> variableTable = new HashMap<>();
+    int programCounter;
+//    HashMap<String, Object> variableTable = new HashMap<>();
+    Deque<FunctionField> callStack = new ArrayDeque<>();
 
     public static final Pattern commentPattern = Pattern.compile("//");
     public static final Pattern labelPattern = Pattern.compile("^label ");
@@ -41,6 +40,7 @@ public class VirtualMachine implements Runnable {
                 return;
             }
 
+            callStack.push(new FunctionField(0));
             try {
                 while (AssemblerParser.evaluate(instructions[programCounter])) {
                     programCounter++;
@@ -52,7 +52,7 @@ public class VirtualMachine implements Runnable {
                 PlayerActionUtil.sendClientMessage(Component.literal("at <main>: " + programCounter).withStyle(ChatFormatting.RED));
             }
         } finally {
-            variableTable.clear();
+            callStack.clear();
             labelAddresses.clear();
             running = false;
         }
@@ -99,10 +99,8 @@ public class VirtualMachine implements Runnable {
     /**
      * 跳转到指定的位置
      * @param n 跳转后执行的下一条指令
-     * @throws IllegalArgumentException 若 n < 0
      */
-    public void jump(int n) {
-        if (n < 0) throw new IllegalArgumentException("Cannot jump to address that are less than 0");
+    private void jump(int n) {
         programCounter = n - 1;
     }
 
@@ -117,18 +115,21 @@ public class VirtualMachine implements Runnable {
         jump(i);
     }
 
+    @SuppressWarnings("DataFlowIssue")
     public void createVariable(String name, Object value) {
-        variableTable.put(name, value);
+        callStack.peek().variableTable.put(name, value);
     }
 
+    @SuppressWarnings("DataFlowIssue")
     public Object getVariable(String name) {
-        Object value = variableTable.get(name);
+        Object value = callStack.peek().variableTable.get(name);
         if (value == null) throw new VMRuntimeException(String.format("Variable \"%s\" is not defined", name));
         return value;
     }
 
+    @SuppressWarnings("DataFlowIssue")
     public void setVariable(String name, Object newValue) {
-        Object o = variableTable.replace(name, newValue);
+        Object o = callStack.peek().variableTable.replace(name, newValue);
         if (o == null) throw new VMRuntimeException(String.format("Variable \"%s\" is not defined", name));
     }
 }

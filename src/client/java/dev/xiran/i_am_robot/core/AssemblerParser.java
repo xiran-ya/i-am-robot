@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 public class AssemblerParser {
     public static final Pattern stringPattern = Pattern.compile("\".*\"");
 
+    @SuppressWarnings("RedundantLabeledSwitchRuleCodeBlock")
     public static boolean evaluate(String instruction) throws SyntaxException {
         if (instruction == null) {
             PlayerActionUtil.sendClientMessage(Component.translatable("message.i_am_robot.vm.null_instruction").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC));
@@ -43,6 +44,28 @@ public class AssemblerParser {
                     }
 
                     VirtualMachine.INSTANCE.setVariable(tokens[tokens.length - 1], sourceObj);
+                    return true;
+                }
+                case "call" -> {
+                    Object[] args = new Object[tokens.length - 3];
+                    for (int i = 0; i < tokens.length - 3; i++) {
+                        args[i] = VirtualMachine.INSTANCE.getVariable(tokens[i + 3]);
+                    }
+                    FunctionField functionField = new FunctionField(VirtualMachine.INSTANCE.programCounter, tokens[2].charAt(0) == '-' ? null : tokens[2], args);
+
+                    VirtualMachine.INSTANCE.callStack.push(functionField);
+                    VirtualMachine.INSTANCE.jumpToLabel(tokens[1]);
+                    return true;
+                }
+                case "return" -> {
+                    FunctionField functionField = VirtualMachine.INSTANCE.callStack.pop();
+                    VirtualMachine.INSTANCE.programCounter = functionField.returnAddress;
+
+                    if (functionField.returnValueTo != null) {
+                        Object returnValue = functionField.variableTable.get(tokens[1]);
+                        if (returnValue == null) throw new VMRuntimeException(String.format("Variable \"%s\" is not defined", tokens[1]));
+                        VirtualMachine.INSTANCE.setVariable(functionField.returnValueTo, returnValue);
+                    }
                     return true;
                 }
                 case "add" -> {
