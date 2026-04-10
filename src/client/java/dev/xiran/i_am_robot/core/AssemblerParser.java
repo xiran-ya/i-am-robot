@@ -58,6 +58,7 @@ public class AssemblerParser {
                     return true;
                 }
                 case "return" -> {
+                    if (VirtualMachine.INSTANCE.callStack.size() == 1) return false;
                     Object returnValue = null;
                     if (tokens.length > 1) returnValue = parseValue(tokens[1]);
 
@@ -183,7 +184,6 @@ public class AssemblerParser {
                     return true;
                 }
                 case "halt" -> {
-                    PlayerActionUtil.sendClientMessage(Component.translatable("message.i_am_robot.vm.halt").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
                     return false;
                 }
                 default -> throw new SyntaxException("Invalid keyword: " + tokens[0]);

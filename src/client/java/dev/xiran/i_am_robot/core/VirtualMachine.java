@@ -16,7 +16,6 @@ public class VirtualMachine implements Runnable {
     private File script;
     private final String[] instructions = new String[1024];
     int programCounter;
-//    HashMap<String, Object> variableTable = new HashMap<>();
     Deque<FunctionField> callStack = new ArrayDeque<>();
 
     public static final Pattern commentPattern = Pattern.compile("//");
@@ -45,6 +44,7 @@ public class VirtualMachine implements Runnable {
                 while (AssemblerParser.evaluate(instructions[programCounter])) {
                     programCounter++;
                 }
+                PlayerActionUtil.sendClientMessage(Component.translatable("message.i_am_robot.vm.halt").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
             } catch (Exception e) {
                 PlayerActionUtil.sendClientMessage(Component.translatable("message.i_am_robot.vm.exception").withStyle(ChatFormatting.RED));
                 String message = e.getClass().getSimpleName() + ": " + e.getMessage();
