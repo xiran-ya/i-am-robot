@@ -15,6 +15,7 @@ public class VirtualMachine implements Runnable {
     private boolean running = false;
     private File script;
     private final String[] instructions = new String[1024];
+    LinkedList<Integer> srcLineIndexes = new LinkedList<>();
     int programCounter;
     Deque<FunctionField> callStack = new ArrayDeque<>();
 
@@ -39,7 +40,7 @@ public class VirtualMachine implements Runnable {
                 return;
             }
 
-            callStack.push(new FunctionField(0));
+            callStack.push(new FunctionField(0, 0));
             try {
                 while (AssemblerParser.evaluate(instructions[programCounter])) {
                     programCounter++;
@@ -49,20 +50,32 @@ public class VirtualMachine implements Runnable {
                 PlayerActionUtil.sendClientMessage(Component.translatable("message.i_am_robot.vm.exception").withStyle(ChatFormatting.RED));
                 String message = e.getClass().getSimpleName() + ": " + e.getMessage();
                 PlayerActionUtil.sendClientMessage(Component.literal(message).withStyle(ChatFormatting.RED));
-                PlayerActionUtil.sendClientMessage(Component.literal("at <main>: " + programCounter).withStyle(ChatFormatting.RED));
+
+                int errLine = programCounter;
+                while (callStack.size() > 1) {
+                    FunctionField field = callStack.pop();
+                    String stackTrace = String.format("at %s (line %d)", findLabel(field.address), srcLineIndexes.get(errLine));
+                    PlayerActionUtil.sendClientMessage(Component.literal(stackTrace).withStyle(ChatFormatting.RED));
+                    errLine = field.returnAddress;
+                }
+                String stackTrace = String.format("at <main> (line %d)", srcLineIndexes.get(errLine));
+                PlayerActionUtil.sendClientMessage(Component.literal(stackTrace).withStyle(ChatFormatting.RED));
             }
         } finally {
             callStack.clear();
             labelAddresses.clear();
+            srcLineIndexes.clear();
             running = false;
         }
     }
 
     private void readScript() throws FileNotFoundException, SyntaxException {
         try (Scanner sc = new Scanner(script)) {
-            int i = 0;
+            int instIndex = 0;
+            int srcIndex = 0;
             while (sc.hasNextLine()) {
                 String s = sc.nextLine();
+                srcIndex++;
 
                 Matcher commentMatcher = commentPattern.matcher(s);
                 if (commentMatcher.find()) {
@@ -75,10 +88,11 @@ public class VirtualMachine implements Runnable {
                 Matcher labelMatcher = labelPattern.matcher(s);
                 if (labelMatcher.find()) {
                     String labelName = s.substring(labelMatcher.end());
-                    if (labelAddresses.put(labelName, i) != null) throw new SyntaxException("Duplicate label name: " + labelName);
+                    if (labelAddresses.put(labelName, instIndex) != null) throw new SyntaxException("Duplicate label name: " + labelName);
                 } else {
-                    instructions[i] = s;
-                    i++;
+                    srcLineIndexes.add(srcIndex);
+                    instructions[instIndex] = s;
+                    instIndex++;
                 }
             }
         }
@@ -96,6 +110,21 @@ public class VirtualMachine implements Runnable {
         this.script = script;
     }
 
+    public int getAddressForLabel(String label) {
+        Integer i = labelAddresses.get(label);
+        if (i == null) throw new IllegalArgumentException(String.format("No matching label for \"%s\"", label));
+        return i;
+    }
+
+    public String findLabel(int address) {
+        for (Map.Entry<String, Integer> entry : labelAddresses.entrySet()) {
+            if (entry.getValue().equals(address)) {
+                return entry.getKey();
+            }
+        }
+        throw new NoSuchElementException("No label found with address " + address);
+    }
+
     /**
      * 跳转到指定的位置
      * @param n 跳转后执行的下一条指令
@@ -110,9 +139,7 @@ public class VirtualMachine implements Runnable {
      * @throws IllegalArgumentException 若指定的标签不存在
      */
     public void jumpToLabel(String label) {
-        Integer i = labelAddresses.get(label);
-        if (i == null) throw new IllegalArgumentException(String.format("No matching label for \"%s\"", label));
-        jump(i);
+        jump(getAddressForLabel(label));
     }
 
     @SuppressWarnings("DataFlowIssue")

@@ -4,17 +4,20 @@ import java.util.HashMap;
 
 public class FunctionField {
     int returnAddress;
+    int address;
     String returnValueTo;
     HashMap<String, Object> variableTable;
 
     /**
      * 创建一个函数作用域
      * @param returnAddress 返回处的地址
+     * @param address 这个函数自身的地址
      * @param returnValueTo 返回值要赋予的变量的名称，为 null 表示不使用返回值
      * @param args 函数的参数
      */
-    public FunctionField(int returnAddress, String returnValueTo, Object[] args) {
+    public FunctionField(int returnAddress, int address, String returnValueTo, Object[] args) {
         this.returnAddress = returnAddress;
+        this.address = address;
         this.returnValueTo = returnValueTo;
 
         variableTable = new HashMap<>();
@@ -26,9 +29,11 @@ public class FunctionField {
     /**
      * 创建一个函数作用域，不指定返回值和参数
      * @param returnAddress 返回处的地址
+     * @param address 这个函数自身的地址
      */
-    public FunctionField(int returnAddress) {
+    public FunctionField(int returnAddress, int address) {
         this.returnAddress = returnAddress;
+        this.address = address;
         variableTable = new HashMap<>();
     }
 }

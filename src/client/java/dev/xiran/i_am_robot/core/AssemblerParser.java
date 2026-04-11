@@ -51,7 +51,7 @@ public class AssemblerParser {
                     for (int i = 0; i < tokens.length - 3; i++) {
                         args[i] = parseValue(tokens[i + 3]);
                     }
-                    FunctionField functionField = new FunctionField(VirtualMachine.INSTANCE.programCounter, tokens[2].charAt(0) == '-' ? null : tokens[2], args);
+                    FunctionField functionField = new FunctionField(VirtualMachine.INSTANCE.programCounter, VirtualMachine.INSTANCE.getAddressForLabel(tokens[1]), tokens[2].charAt(0) == '-' ? null : tokens[2], args);
 
                     VirtualMachine.INSTANCE.callStack.push(functionField);
                     VirtualMachine.INSTANCE.jumpToLabel(tokens[1]);
