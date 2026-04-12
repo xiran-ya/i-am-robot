@@ -14,7 +14,7 @@ public class AssemblerParser {
     public static final Pattern stringPattern = Pattern.compile("\".*\"");
 
     @SuppressWarnings("RedundantLabeledSwitchRuleCodeBlock")
-    public static boolean evaluate(String instruction) throws SyntaxException {
+    public static boolean evaluate(String instruction) throws SyntaxException, InterruptedException {
         if (instruction == null) {
             PlayerActionUtil.sendClientMessage(Component.translatable("message.i_am_robot.vm.null_instruction").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC));
             return false;
@@ -154,6 +154,14 @@ public class AssemblerParser {
                 case "jump" -> {
                     VirtualMachine.INSTANCE.jumpToLabel(tokens[1]);
                     return true;
+                }
+                case "sleep" -> {
+                    if (parseValue(tokens[1]) instanceof Integer time) {
+                        Thread.sleep(50L * time);
+                        return true;
+                    } else {
+                        throw new TypeException("sleep only accept int argument");
+                    }
                 }
                 case "format" -> {
                     Object format = VirtualMachine.INSTANCE.getVariable(tokens[1]);
