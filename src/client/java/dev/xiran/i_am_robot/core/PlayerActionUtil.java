@@ -1,8 +1,10 @@
 package dev.xiran.i_am_robot.core;
 
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 
+import java.lang.reflect.Field;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.concurrent.locks.ReentrantLock;
@@ -32,5 +34,35 @@ public class PlayerActionUtil {
         } finally {
             queueLock.unlock();
         }
+    }
+
+    public static void attack() {
+        KeyMapping keyAttack = Minecraft.getInstance().options.keyAttack;
+        try {
+            Field clickCount = KeyMapping.class.getDeclaredField("clickCount");
+            clickCount.setAccessible(true);
+            clickCount.setInt(keyAttack, 1);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void use() {
+        KeyMapping keyAttack = Minecraft.getInstance().options.keyUse;
+        try {
+            Field clickCount = KeyMapping.class.getDeclaredField("clickCount");
+            clickCount.setAccessible(true);
+            clickCount.setInt(keyAttack, 1);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void setHoldAttack(boolean state) {
+        Minecraft.getInstance().options.keyAttack.setDown(state);
+    }
+
+    public static void setHoldUse(boolean state) {
+        Minecraft.getInstance().options.keyUse.setDown(state);
     }
 }

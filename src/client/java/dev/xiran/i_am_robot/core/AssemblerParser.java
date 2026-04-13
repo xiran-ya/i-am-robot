@@ -163,6 +163,24 @@ public class AssemblerParser {
                         throw new TypeException("sleep only accept int argument");
                     }
                 }
+                case "attack" -> {
+                    switch (tokens[1]) {
+                        case "hold" -> PlayerActionUtil.setHoldAttack(true);
+                        case "stop" -> PlayerActionUtil.setHoldAttack(false);
+                        case "once" -> PlayerActionUtil.attack();
+                        default -> throw new SyntaxException("Invalid argument for attack");
+                    }
+                    return true;
+                }
+                case "use" -> {
+                    switch (tokens[1]) {
+                        case "hold" -> PlayerActionUtil.setHoldUse(true);
+                        case "stop" -> PlayerActionUtil.setHoldUse(false);
+                        case "once" -> PlayerActionUtil.use();
+                        default -> throw new SyntaxException("Invalid argument for use");
+                    }
+                    return true;
+                }
                 case "format" -> {
                     Object format = VirtualMachine.INSTANCE.getVariable(tokens[1]);
                     if (format instanceof String) {
