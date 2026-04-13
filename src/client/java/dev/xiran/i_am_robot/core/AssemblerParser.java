@@ -189,6 +189,14 @@ public class AssemblerParser {
                         throw new TypeException("Int expected");
                     }
                 }
+                case "rot" -> {
+                    if ((parseValue(tokens[1]) instanceof Double yaw) && (parseValue(tokens[2]) instanceof Double pitch)) {
+                        PlayerActionUtil.rot(yaw, pitch);
+                        return true;
+                    } else {
+                        throw new TypeException("Double expected for rot");
+                    }
+                }
                 case "format" -> {
                     Object format = VirtualMachine.INSTANCE.getVariable(tokens[1]);
                     if (format instanceof String) {

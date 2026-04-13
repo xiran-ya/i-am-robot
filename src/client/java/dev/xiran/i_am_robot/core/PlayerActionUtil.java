@@ -73,4 +73,15 @@ public class PlayerActionUtil {
             player.getInventory().setSelectedSlot(i);
         }
     }
+
+    /**
+     * Rotation (set yaw & pitch)
+     */
+    public static void rot(double yaw, double pitch) {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null) {
+            player.setXRot((float) yaw);
+            player.setYRot((float) pitch);
+        }
+    }
 }
