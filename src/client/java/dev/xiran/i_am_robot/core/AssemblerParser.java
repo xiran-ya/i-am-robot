@@ -181,6 +181,14 @@ public class AssemblerParser {
                     }
                     return true;
                 }
+                case "hotbar" -> {
+                    if (parseValue(tokens[1]) instanceof Integer index) {
+                        PlayerActionUtil.hotbar(index);
+                        return true;
+                    } else {
+                        throw new TypeException("Int expected");
+                    }
+                }
                 case "format" -> {
                     Object format = VirtualMachine.INSTANCE.getVariable(tokens[1]);
                     if (format instanceof String) {

@@ -2,6 +2,7 @@ package dev.xiran.i_am_robot.core;
 
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 
 import java.lang.reflect.Field;
@@ -64,5 +65,12 @@ public class PlayerActionUtil {
 
     public static void setHoldUse(boolean state) {
         Minecraft.getInstance().options.keyUse.setDown(state);
+    }
+
+    public static void hotbar(int i) {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null) {
+            player.getInventory().setSelectedSlot(i);
+        }
     }
 }
