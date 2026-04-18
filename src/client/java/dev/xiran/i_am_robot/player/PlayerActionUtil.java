@@ -1,4 +1,4 @@
-package dev.xiran.i_am_robot.core;
+package dev.xiran.i_am_robot.player;
 
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;

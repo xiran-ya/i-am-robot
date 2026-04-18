@@ -1,7 +1,8 @@
 package dev.xiran.i_am_robot;
 
 import dev.xiran.i_am_robot.command.ModCommand;
-import dev.xiran.i_am_robot.core.PlayerActionUtil;
+import dev.xiran.i_am_robot.player.ContainerUtil;
+import dev.xiran.i_am_robot.player.PlayerActionUtil;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
@@ -14,8 +15,6 @@ public class IAmRobotClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
-		IAmRobot.LOGGER.info("Hello qwq"); // TODO: Remove before release
-
 		File configDir = new File(Minecraft.getInstance().gameDirectory, "config\\i_am_robot");
 		scriptDir = new File(configDir, "scripts");
 		if (!configDir.exists()) {
@@ -25,7 +24,11 @@ public class IAmRobotClient implements ClientModInitializer {
 
 		ModCommand.initialize();
 
-		ClientTickEvents.END_CLIENT_TICK.register(PlayerActionUtil::sendMessageOnTick);
+		ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
+	}
 
+	public void onClientTick(Minecraft mc) {
+		PlayerActionUtil.sendMessageOnTick(mc);
+		ContainerUtil.handleCloseContainer(mc);
 	}
 }

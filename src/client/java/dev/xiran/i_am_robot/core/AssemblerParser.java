@@ -1,5 +1,7 @@
 package dev.xiran.i_am_robot.core;
 
+import dev.xiran.i_am_robot.player.ContainerUtil;
+import dev.xiran.i_am_robot.player.PlayerActionUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 
@@ -25,15 +27,12 @@ public class AssemblerParser {
             switch (tokens[0]) {
                 case "int" -> {
                     VirtualMachine.INSTANCE.createVariable(tokens[1], tokens.length == 2 ? 0 : Integer.parseInt(tokens[2]));
-                    return true;
                 }
                 case "double" -> {
                     VirtualMachine.INSTANCE.createVariable(tokens[1], tokens.length == 2 ? 0.0 : Double.parseDouble(tokens[2]));
-                    return true;
                 }
                 case "string", "String" -> {
                     VirtualMachine.INSTANCE.createVariable(tokens[1], tokens.length == 2 ? "" : findString(instruction));
-                    return true;
                 }
                 case "mov" -> {
                     Object sourceObj;
@@ -44,7 +43,6 @@ public class AssemblerParser {
                     }
 
                     VirtualMachine.INSTANCE.setVariable(tokens[tokens.length - 1], sourceObj);
-                    return true;
                 }
                 case "call" -> {
                     Object[] args = new Object[tokens.length - 3];
@@ -55,7 +53,6 @@ public class AssemblerParser {
 
                     VirtualMachine.INSTANCE.callStack.push(functionField);
                     VirtualMachine.INSTANCE.jumpToLabel(tokens[1]);
-                    return true;
                 }
                 case "return" -> {
                     if (VirtualMachine.INSTANCE.callStack.size() == 1) return false;
@@ -69,7 +66,6 @@ public class AssemblerParser {
                         if (returnValue == null) throw new VMRuntimeException("Function did not return desired value");
                         VirtualMachine.INSTANCE.setVariable(functionField.returnValueTo, returnValue);
                     }
-                    return true;
                 }
                 case "add" -> {
                     Object var0 = VirtualMachine.INSTANCE.getVariable(tokens[1]);
@@ -81,14 +77,12 @@ public class AssemblerParser {
                         Double::sum
                     );
                     VirtualMachine.INSTANCE.setVariable(tokens[3], result);
-                    return true;
                 }
                 case "jumpIf" -> {
                     if (tokens.length == 3) {
                         Object condition = parseValue(tokens[1]);
                         if (condition instanceof Integer) {
                             if ((int) condition != 0) VirtualMachine.INSTANCE.jumpToLabel(tokens[2]);
-                            return true;
                         } else {
                             throw new IllegalArgumentException("Cannot use non-int value as condition");
                         }
@@ -148,17 +142,14 @@ public class AssemblerParser {
                             default -> throw new SyntaxException("Invalid compare operator: " + operation);
                         };
                         if (result) VirtualMachine.INSTANCE.jumpToLabel(tokens[4]);
-                        return true;
                     }
                 }
                 case "jump" -> {
                     VirtualMachine.INSTANCE.jumpToLabel(tokens[1]);
-                    return true;
                 }
                 case "sleep" -> {
                     if (parseValue(tokens[1]) instanceof Integer time) {
                         Thread.sleep(50L * time);
-                        return true;
                     } else {
                         throw new TypeException("sleep only accept int argument");
                     }
@@ -170,7 +161,6 @@ public class AssemblerParser {
                         case "once" -> PlayerActionUtil.attack();
                         default -> throw new SyntaxException("Invalid argument for attack");
                     }
-                    return true;
                 }
                 case "use" -> {
                     switch (tokens[1]) {
@@ -179,22 +169,30 @@ public class AssemblerParser {
                         case "once" -> PlayerActionUtil.use();
                         default -> throw new SyntaxException("Invalid argument for use");
                     }
-                    return true;
                 }
                 case "hotbar" -> {
                     if (parseValue(tokens[1]) instanceof Integer index) {
                         PlayerActionUtil.hotbar(index);
-                        return true;
                     } else {
-                        throw new TypeException("Int expected");
+                        throw new TypeException("Int expected for hotbar index");
                     }
                 }
                 case "rot" -> {
                     if ((parseValue(tokens[1]) instanceof Double yaw) && (parseValue(tokens[2]) instanceof Double pitch)) {
                         PlayerActionUtil.rot(yaw, pitch);
-                        return true;
                     } else {
                         throw new TypeException("Double expected for rot");
+                    }
+                }
+                case "item" -> {
+                    if (tokens[1].equals("get")) {
+                        if (parseValue(tokens[2]) instanceof Integer count && parseValue(tokens[3]) instanceof Integer inventorySlot) {
+                            ContainerUtil.getItem(count, inventorySlot);
+                        } else {
+                            throw new TypeException("Int expected for item count & slot");
+                        }
+                    } else {
+                        // TODO: put
                     }
                 }
                 case "format" -> {
@@ -207,7 +205,6 @@ public class AssemblerParser {
                             }
                             String formattedString = String.format((String) format, formatArgs);
                             VirtualMachine.INSTANCE.setVariable(tokens[1], formattedString);
-                            return true;
                         } catch (IllegalFormatException e) {
                             throw new VMRuntimeException("Illegal format string syntax");
                         }
@@ -223,13 +220,13 @@ public class AssemblerParser {
                         message = parseValue(tokens[1]).toString();
                     }
                     PlayerActionUtil.sendClientMessage(Component.literal(message));
-                    return true;
                 }
                 case "halt" -> {
                     return false;
                 }
                 default -> throw new SyntaxException("Invalid keyword: " + tokens[0]);
             }
+            return true;
         } catch (ArrayIndexOutOfBoundsException e) {
             throw new SyntaxException("Instruction is missing argument");
         } catch (NumberFormatException e) {
