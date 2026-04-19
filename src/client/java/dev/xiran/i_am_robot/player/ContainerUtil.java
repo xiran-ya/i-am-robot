@@ -57,6 +57,22 @@ public class ContainerUtil {
         }
     }
 
+    /**
+     * 将物品栏中的一组物品转移到容器中
+     * @param inventorySlot 要转移的物品栏编号
+     * @see ContainerUtil#getItem(int, int)
+     */
+    public static void putItem(int inventorySlot) {
+        LocalPlayer player = Minecraft.getInstance().player;
+        MultiPlayerGameMode gameMode = Minecraft.getInstance().gameMode;
+        if (player != null && gameMode != null && player.hasContainerOpen()) {
+            AbstractContainerMenu menu = player.containerMenu;
+            int inventoryIndex = mapInventorySlot2Index(menu, inventorySlot);
+            gameMode.handleInventoryMouseClick(menu.containerId, inventoryIndex, MOUSE_LEFT, ClickType.QUICK_MOVE, player);
+            closeContainer();
+        }
+    }
+
     private static int findAvailableItem(NonNullList<ItemStack> items) {
         for (int i = 0; i < items.size(); i++) {
             if (!items.get(i).isEmpty()) {
@@ -67,6 +83,7 @@ public class ContainerUtil {
     }
 
     private static int mapInventorySlot2Index(AbstractContainerMenu menu, int inventorySlot) {
+        if (inventorySlot < 0 || inventorySlot > 35) throw new IllegalArgumentException("Invalid inventory slot index");
         int slotCount = menu.slots.size();
         return inventorySlot + slotCount - 36;
     }

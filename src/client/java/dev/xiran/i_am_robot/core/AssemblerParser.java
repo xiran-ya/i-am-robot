@@ -192,7 +192,11 @@ public class AssemblerParser {
                             throw new TypeException("Int expected for item count & slot");
                         }
                     } else {
-                        // TODO: put
+                        if (parseValue(tokens[2]) instanceof Integer inventorySlot) {
+                            ContainerUtil.putItem(inventorySlot);
+                        } else {
+                            throw new TypeException("Int expected for inventory slot");
+                        }
                     }
                 }
                 case "format" -> {
