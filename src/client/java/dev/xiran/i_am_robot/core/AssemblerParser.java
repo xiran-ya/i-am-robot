@@ -293,6 +293,41 @@ public class AssemblerParser {
                         }
                     }
                 }
+                case "pow" -> {
+                    Object var0 = parseValue(tokens[1]);
+                    Object var1 = parseValue(tokens[2]);
+                    Object result = dualCalculate(var0, var1,
+                        Math::pow,
+                        Math::pow,
+                        Math::pow,
+                        Math::pow
+                    );
+                    VirtualMachine.INSTANCE.setVariable(tokens[3], result);
+                }
+                case "sin" -> {
+                    Object value = parseValue(tokens[1]);
+                    Object result = monoCalculate(value,
+                        Math::sin,
+                        Math::sin
+                    );
+                    VirtualMachine.INSTANCE.setVariable(tokens[2], result);
+                }
+                case "cos" -> {
+                    Object value = parseValue(tokens[1]);
+                    Object result = monoCalculate(value,
+                        Math::cos,
+                        Math::cos
+                    );
+                    VirtualMachine.INSTANCE.setVariable(tokens[2], result);
+                }
+                case "tan" -> {
+                    Object value = parseValue(tokens[1]);
+                    Object result = monoCalculate(value,
+                        Math::tan,
+                        Math::tan
+                    );
+                    VirtualMachine.INSTANCE.setVariable(tokens[2], result);
+                }
                 case "format" -> {
                     Object format = VirtualMachine.INSTANCE.getVariable(tokens[1]);
                     if (format instanceof String) {
