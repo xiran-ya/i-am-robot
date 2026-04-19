@@ -6,6 +6,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 
 import java.util.IllegalFormatException;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -67,14 +68,107 @@ public class AssemblerParser {
                         VirtualMachine.INSTANCE.setVariable(functionField.returnValueTo, returnValue);
                     }
                 }
-                case "add" -> {
+                case "+" -> {
                     Object var0 = VirtualMachine.INSTANCE.getVariable(tokens[1]);
                     Object var1 = parseValue(tokens[2]);
-                    Object result = calculate(var0, var1,
+                    Object result = dualCalculate(var0, var1,
                         Integer::sum,
                         Double::sum,
                         Double::sum,
                         Double::sum
+                    );
+                    VirtualMachine.INSTANCE.setVariable(tokens[3], result);
+                }
+                case "-" -> {
+                    Object var0 = parseValue(tokens[1]);
+                    Object var1 = parseValue(tokens[2]);
+                    Object result = dualCalculate(var0, var1,
+                        (v0, v1) -> v0 - v1,
+                        (v0, v1) -> v0 - v1,
+                        (v0, v1) -> v0 - v1,
+                        (v0, v1) -> v0 - v1
+                    );
+                    VirtualMachine.INSTANCE.setVariable(tokens[3], result);
+                }
+                case "*" -> {
+                    Object var0 = parseValue(tokens[1]);
+                    Object var1 = parseValue(tokens[2]);
+                    Object result = dualCalculate(var0, var1,
+                        (v0, v1) -> v0 * v1,
+                        (v0, v1) -> v0 * v1,
+                        (v0, v1) -> v0 * v1,
+                        (v0, v1) -> v0 * v1
+                    );
+                    VirtualMachine.INSTANCE.setVariable(tokens[3], result);
+                }
+                case "/" -> {
+                    Object var0 = parseValue(tokens[1]);
+                    Object var1 = parseValue(tokens[2]);
+                    Object result = dualCalculate(var0, var1,
+                        (v0, v1) -> v0 / v1,
+                        (v0, v1) -> v0 / v1,
+                        (v0, v1) -> v0 / v1,
+                        (v0, v1) -> v0 / v1
+                    );
+                    VirtualMachine.INSTANCE.setVariable(tokens[3], result);
+                }
+                case "%" -> {
+                    Object var0 = parseValue(tokens[1]);
+                    Object var1 = parseValue(tokens[2]);
+                    Object result = dualCalculate(var0, var1,
+                        (v0, v1) -> v0 % v1,
+                        (v0, v1) -> {throw new TypeException("Cannot perform modulus on non-int value");},
+                        (v0, v1) -> {throw new TypeException("Cannot perform modulus on non-int value");},
+                        (v0, v1) -> {throw new TypeException("Cannot perform modulus on non-int value");}
+                    );
+                    VirtualMachine.INSTANCE.setVariable(tokens[3], result);
+                }
+                case "&" -> {
+                    Object var0 = parseValue(tokens[1]);
+                    Object var1 = parseValue(tokens[2]);
+                    Object result = dualCalculate(var0, var1,
+                        (v0, v1) -> v0 & v1,
+                        (v0, v1) -> {throw new TypeException("Cannot perform \"&\" on non-int value");},
+                        (v0, v1) -> {throw new TypeException("Cannot perform \"&\" on non-int value");},
+                        (v0, v1) -> {throw new TypeException("Cannot perform \"&\" on non-int value");}
+                    );
+                    VirtualMachine.INSTANCE.setVariable(tokens[3], result);
+                }
+                case "|" -> {
+                    Object var0 = parseValue(tokens[1]);
+                    Object var1 = parseValue(tokens[2]);
+                    Object result = dualCalculate(var0, var1,
+                        (v0, v1) -> v0 | v1,
+                        (v0, v1) -> {throw new TypeException("Cannot perform \"|\" on non-int value");},
+                        (v0, v1) -> {throw new TypeException("Cannot perform \"|\" on non-int value");},
+                        (v0, v1) -> {throw new TypeException("Cannot perform \"|\" on non-int value");}
+                    );
+                    VirtualMachine.INSTANCE.setVariable(tokens[3], result);
+                }
+                case "!" -> {
+                    Object value = parseValue(tokens[1]);
+                    Object result = monoCalculate(value,
+                        (v) -> v == 0 ? 1 : 0,
+                        (v) -> {throw new TypeException("Cannot perform \"!\" on non-int value");}
+                    );
+                    VirtualMachine.INSTANCE.setVariable(tokens[2], result);
+                }
+                case "~" -> {
+                    Object value = parseValue(tokens[1]);
+                    Object result = monoCalculate(value,
+                        (v) -> ~v,
+                        (v) -> {throw new TypeException("Cannot perform \"~\" on non-int value");}
+                    );
+                    VirtualMachine.INSTANCE.setVariable(tokens[2], result);
+                }
+                case "^" -> {
+                    Object var0 = parseValue(tokens[1]);
+                    Object var1 = parseValue(tokens[2]);
+                    Object result = dualCalculate(var0, var1,
+                            (v0, v1) -> v0 ^ v1,
+                            (v0, v1) -> {throw new TypeException("Cannot perform \"^\" on non-int value");},
+                            (v0, v1) -> {throw new TypeException("Cannot perform \"^\" on non-int value");},
+                            (v0, v1) -> {throw new TypeException("Cannot perform \"^\" on non-int value");}
                     );
                     VirtualMachine.INSTANCE.setVariable(tokens[3], result);
                 }
@@ -92,7 +186,7 @@ public class AssemblerParser {
                         String operation = tokens[2];
                         boolean result = switch (operation) {
                             case "==" -> {
-                                yield (boolean) calculate(var0, var1,
+                                yield (boolean) dualCalculate(var0, var1,
                                     Integer::equals,
                                     (v0, v1) -> false,
                                     (v0, v1) -> false,
@@ -100,7 +194,7 @@ public class AssemblerParser {
                                 );
                             }
                             case "!=" -> {
-                                yield (boolean) calculate(var0, var1,
+                                yield (boolean) dualCalculate(var0, var1,
                                     (v0, v1) -> !v0.equals(v1),
                                     (v0, v1) -> true,
                                     (v0, v1) -> true,
@@ -108,7 +202,7 @@ public class AssemblerParser {
                                 );
                             }
                             case ">" -> {
-                                yield (boolean) calculate(var0, var1,
+                                yield (boolean) dualCalculate(var0, var1,
                                     (v0, v1) -> v0 > v1,
                                     (v0, v1) -> v0 > v1,
                                     (v0, v1) -> v0 > v1,
@@ -116,7 +210,7 @@ public class AssemblerParser {
                                 );
                             }
                             case ">=" -> {
-                                yield (boolean) calculate(var0, var1,
+                                yield (boolean) dualCalculate(var0, var1,
                                     (v0, v1) -> v0 >= v1,
                                     (v0, v1) -> v0 >= v1,
                                     (v0, v1) -> v0 >= v1,
@@ -124,7 +218,7 @@ public class AssemblerParser {
                                 );
                             }
                             case "<" -> {
-                                yield (boolean) calculate(var0, var1,
+                                yield (boolean) dualCalculate(var0, var1,
                                     (v0, v1) -> v0 < v1,
                                     (v0, v1) -> v0 < v1,
                                     (v0, v1) -> v0 < v1,
@@ -132,7 +226,7 @@ public class AssemblerParser {
                                 );
                             }
                             case "<=" -> {
-                                yield (boolean) calculate(var0, var1,
+                                yield (boolean) dualCalculate(var0, var1,
                                     (v0, v1) -> v0 <= v1,
                                     (v0, v1) -> v0 <= v1,
                                     (v0, v1) -> v0 <= v1,
@@ -238,7 +332,17 @@ public class AssemblerParser {
         }
     }
 
-    private static Object calculate(Object arg0, Object arg1, DualOperation<Integer, Integer> opII, DualOperation<Integer, Double> opID, DualOperation<Double, Integer> opDI, DualOperation<Double, Double> opDD) {
+    private static Object monoCalculate(Object value, Function<Integer, Object> opInt, Function<Double, Object> opDouble) {
+        if (value instanceof Integer intValue) {
+            return opInt.apply(intValue);
+        } else if (value instanceof Double doubleValue) {
+            return opDouble.apply(doubleValue);
+        } else {
+            throw new TypeException("Cannot perform calculation with non-number variable");
+        }
+    }
+
+    private static Object dualCalculate(Object arg0, Object arg1, DualOperation<Integer, Integer> opII, DualOperation<Integer, Double> opID, DualOperation<Double, Integer> opDI, DualOperation<Double, Double> opDD) {
         if (arg0 instanceof Integer int0) {
             if (arg1 instanceof Integer int1) {
                 return opII.apply(int0, int1);
