@@ -6,15 +6,13 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 
 import java.util.IllegalFormatException;
+import java.util.LinkedList;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * 一个脚本解释器，使用简易的类汇编语言
  */
 public class AssemblerParser {
-    public static final Pattern stringPattern = Pattern.compile("\".*\"");
 
     @SuppressWarnings("RedundantLabeledSwitchRuleCodeBlock")
     public static boolean evaluate(String instruction) throws SyntaxException, InterruptedException {
@@ -23,7 +21,7 @@ public class AssemblerParser {
             return false;
         }
 
-        String[] tokens = instruction.split(" +");
+        String[] tokens = tokenize(instruction);
         try {
             switch (tokens[0]) {
                 case "int" -> {
@@ -33,17 +31,10 @@ public class AssemblerParser {
                     VirtualMachine.INSTANCE.createVariable(tokens[1], tokens.length == 2 ? 0.0 : Double.parseDouble(tokens[2]));
                 }
                 case "string", "String" -> {
-                    VirtualMachine.INSTANCE.createVariable(tokens[1], tokens.length == 2 ? "" : findString(instruction));
+                    VirtualMachine.INSTANCE.createVariable(tokens[1], tokens.length == 2 ? "" : tokens[2].substring(1));
                 }
                 case "mov" -> {
-                    Object sourceObj;
-                    if (tokens[1].charAt(0) == '"') {
-                        sourceObj = findString(instruction);
-                    } else {
-                        sourceObj = parseValue(tokens[1]);
-                    }
-
-                    VirtualMachine.INSTANCE.setVariable(tokens[tokens.length - 1], sourceObj);
+                    VirtualMachine.INSTANCE.setVariable(tokens[1], parseValue(tokens[2]));
                 }
                 case "call" -> {
                     Object[] args = new Object[tokens.length - 3];
@@ -68,8 +59,9 @@ public class AssemblerParser {
                         VirtualMachine.INSTANCE.setVariable(functionField.returnValueTo, returnValue);
                     }
                 }
+                // TODO: 支持字符串连接
                 case "+" -> {
-                    Object var0 = VirtualMachine.INSTANCE.getVariable(tokens[1]);
+                    Object var0 = parseValue(tokens[1]);
                     Object var1 = parseValue(tokens[2]);
                     Object result = dualCalculate(var0, var1,
                         Integer::sum,
@@ -329,15 +321,15 @@ public class AssemblerParser {
                     VirtualMachine.INSTANCE.setVariable(tokens[2], result);
                 }
                 case "format" -> {
-                    Object format = VirtualMachine.INSTANCE.getVariable(tokens[1]);
-                    if (format instanceof String) {
+                    Object format = parseValue(tokens[1]);
+                    if (format instanceof String formatStr) {
                         try {
-                            Object[] formatArgs = new Object[tokens.length - 2];
-                            for (int i = 0; i < tokens.length - 2; i++) {
-                                formatArgs[i] = parseValue(tokens[i + 2]);
+                            Object[] formatArgs = new Object[tokens.length - 3];
+                            for (int i = 0; i < tokens.length - 3; i++) {
+                                formatArgs[i] = parseValue(tokens[i + 3]);
                             }
-                            String formattedString = String.format((String) format, formatArgs);
-                            VirtualMachine.INSTANCE.setVariable(tokens[1], formattedString);
+                            String formattedString = String.format(formatStr, formatArgs);
+                            VirtualMachine.INSTANCE.setVariable(tokens[2], formattedString);
                         } catch (IllegalFormatException e) {
                             throw new VMRuntimeException("Illegal format string syntax");
                         }
@@ -346,12 +338,7 @@ public class AssemblerParser {
                     }
                 }
                 case "log" -> {
-                    String message;
-                    if (tokens[1].charAt(0) == '"') {
-                        message = findString(instruction);
-                    } else {
-                        message = parseValue(tokens[1]).toString();
-                    }
+                    String message = parseValue(tokens[1]).toString();
                     PlayerActionUtil.sendClientMessage(Component.literal(message));
                 }
                 case "halt" -> {
@@ -365,6 +352,50 @@ public class AssemblerParser {
         } catch (NumberFormatException e) {
             throw new SyntaxException("Invalid number format");
         }
+    }
+
+    public static String[] tokenize(String instruction) {
+        char[] instChars = instruction.toCharArray();
+        LinkedList<String> tokens = new LinkedList<>();
+
+        // 寻找双引号对
+        int quoteStart = 0;
+        boolean findFirstQuote = false;
+
+        // 寻找 token
+        int tokenStart = 0;
+        boolean findToken = true;
+
+        for (int i = 0; i < instChars.length; i++) {
+            if (!findFirstQuote) {
+                if (instChars[i] == ' ') {
+                    if (findToken) {
+                        tokens.add(instruction.substring(tokenStart, i));
+                        findToken = false;
+                    }
+                } else if (!findToken) {
+                    findToken = true;
+                    tokenStart = i;
+                }
+            }
+
+            if (instChars[i] == '"') {
+                findToken = false;
+                if (findFirstQuote) {
+                    tokens.add(instruction.substring(quoteStart, i));
+                    findFirstQuote = false;
+                } else {
+                    findFirstQuote = true;
+                    quoteStart = i;
+                }
+            }
+        }
+        if (findToken) {
+            // 最后一个 token
+            tokens.add(instruction.substring(tokenStart));
+        }
+
+        return tokens.toArray(new String[0]);
     }
 
     private static Object monoCalculate(Object value, Function<Integer, Object> opInt, Function<Double, Object> opDouble) {
@@ -407,14 +438,10 @@ public class AssemblerParser {
             } else {
                 return Integer.parseInt(string);
             }
+        } else if (c == '"') {
+            return string.substring(1);
         } else {
             return VirtualMachine.INSTANCE.getVariable(string);
         }
-    }
-
-    private static String findString(String instruction) throws SyntaxException {
-        Matcher matcher = stringPattern.matcher(instruction);
-        if (!matcher.find()) throw new SyntaxException("Missing argument, string expected");
-        return instruction.substring(matcher.start() + 1, matcher.end() - 1);
     }
 }
