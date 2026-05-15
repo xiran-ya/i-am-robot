@@ -59,16 +59,20 @@ public class AssemblerParser {
                         VirtualMachine.INSTANCE.setVariable(functionField.returnValueTo, returnValue);
                     }
                 }
-                // TODO: 支持字符串连接
                 case "+" -> {
                     Object var0 = parseValue(tokens[1]);
                     Object var1 = parseValue(tokens[2]);
-                    Object result = dualCalculate(var0, var1,
-                        Integer::sum,
-                        Double::sum,
-                        Double::sum,
-                        Double::sum
-                    );
+                    Object result;
+                    if (var0 instanceof String || var1 instanceof String) {
+                        result = var0.toString() + var1.toString();
+                    } else {
+                        result = dualCalculate(var0, var1,
+                            Integer::sum,
+                            Double::sum,
+                            Double::sum,
+                            Double::sum
+                        );
+                    }
                     VirtualMachine.INSTANCE.setVariable(tokens[3], result);
                 }
                 case "-" -> {
