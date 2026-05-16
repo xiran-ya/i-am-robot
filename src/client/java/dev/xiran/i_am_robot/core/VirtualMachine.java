@@ -6,7 +6,9 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,6 +21,7 @@ public class VirtualMachine implements Runnable {
     LinkedList<Integer> srcLineIndexes = new LinkedList<>();
     int programCounter;
     Deque<FunctionField> callStack = new ArrayDeque<>();
+    private FileInputStream fileInputStream = null;
 
     public static final Pattern commentPattern = Pattern.compile("//");
     public static final Pattern labelPattern = Pattern.compile("^label ");
@@ -63,6 +66,7 @@ public class VirtualMachine implements Runnable {
                 PlayerActionUtil.sendClientMessage(Component.literal(stackTrace).withStyle(ChatFormatting.RED));
             }
         } finally {
+            closeFile();
             callStack.clear();
             labelAddresses.clear();
             srcLineIndexes.clear();
@@ -159,5 +163,34 @@ public class VirtualMachine implements Runnable {
     public void setVariable(String name, Object newValue) {
         Object o = callStack.peek().variableTable.replace(name, newValue);
         if (o == null) throw new VMRuntimeException(String.format("Variable \"%s\" is not defined", name));
+    }
+
+    public void openFile(String file) throws FileNotFoundException {
+        if (fileInputStream != null) {
+            closeFile();
+        }
+        fileInputStream = new FileInputStream(new File("./config/i_am_robot/data", file));
+    }
+
+    public void closeFile() {
+        try {
+            if (fileInputStream != null) {
+                fileInputStream.close();
+                fileInputStream = null;
+            }
+        } catch (IOException e) {
+            IAmRobot.LOGGER.error("Error while closing file", e);
+            throw new VMRuntimeException("Failed to close file. See log for more info.");
+        }
+    }
+
+    public int readFile() {
+        if (fileInputStream == null) throw new IllegalStateException("Cannot read when no file is opened");
+        try {
+            return fileInputStream.read();
+        } catch (IOException e) {
+            IAmRobot.LOGGER.error("An IOException occurred while reading file", e);
+            throw new VMRuntimeException("Error while reading file. See log for more info.");
+        }
     }
 }

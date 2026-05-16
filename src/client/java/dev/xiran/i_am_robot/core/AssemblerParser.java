@@ -5,6 +5,7 @@ import dev.xiran.i_am_robot.player.PlayerActionUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 
+import java.io.FileNotFoundException;
 import java.util.IllegalFormatException;
 import java.util.LinkedList;
 import java.util.function.Function;
@@ -286,6 +287,28 @@ public class AssemblerParser {
                             ContainerUtil.putItem(inventorySlot);
                         } else {
                             throw new TypeException("Int expected for inventory slot");
+                        }
+                    }
+                }
+                case "file" -> {
+                    switch (tokens[1]) {
+                        case "open" -> {
+                            if (parseValue(tokens[2]) instanceof String filePath) {
+                                try {
+                                    VirtualMachine.INSTANCE.openFile(filePath);
+                                } catch (FileNotFoundException e) {
+                                    throw new VMRuntimeException("File not found: " + filePath);
+                                }
+                            } else {
+                                throw new TypeException("String expected for file path");
+                            }
+                        }
+                        case "read" -> {
+                            int data = VirtualMachine.INSTANCE.readFile();
+                            VirtualMachine.INSTANCE.setVariable(tokens[2], data);
+                        }
+                        case "close" -> {
+                            VirtualMachine.INSTANCE.closeFile();
                         }
                     }
                 }

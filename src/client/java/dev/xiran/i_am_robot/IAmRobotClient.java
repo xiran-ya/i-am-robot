@@ -12,15 +12,15 @@ import java.io.File;
 public class IAmRobotClient implements ClientModInitializer {
 
 	public static File scriptDir;
+	public static File dataDir;
 
 	@Override
 	public void onInitializeClient() {
 		File configDir = new File(Minecraft.getInstance().gameDirectory, "config\\i_am_robot");
 		scriptDir = new File(configDir, "scripts");
-		if (!configDir.exists()) {
-			if (!configDir.mkdirs()) IAmRobot.LOGGER.error("Failed to create directory: {}", configDir);
-			if (!scriptDir.mkdir()) IAmRobot.LOGGER.error("Fail to create directory: {}", scriptDir);
-		}
+		dataDir = new File(configDir, "data");
+		initDirectory(scriptDir);
+		initDirectory(dataDir);
 
 		ModCommand.initialize();
 
@@ -30,5 +30,11 @@ public class IAmRobotClient implements ClientModInitializer {
 	public void onClientTick(Minecraft mc) {
 		PlayerActionUtil.sendMessageOnTick(mc);
 		ContainerUtil.handleCloseContainer(mc);
+	}
+
+	private void initDirectory(File dir) {
+		if (!dir.exists()) {
+			if (!dir.mkdirs()) IAmRobot.LOGGER.error("Failed to create directory: {}", dir);
+		}
 	}
 }
