@@ -290,6 +290,14 @@ public class AssemblerParser {
                         }
                     }
                 }
+                case "say" -> {
+                    String message = parseValue(tokens[1]).toString();
+                    PlayerActionUtil.say(message);
+                }
+                case "cmd" -> {
+                    String command = parseValue(tokens[1]).toString();
+                    PlayerActionUtil.command(command);
+                }
                 case "file" -> {
                     switch (tokens[1]) {
                         case "open" -> {

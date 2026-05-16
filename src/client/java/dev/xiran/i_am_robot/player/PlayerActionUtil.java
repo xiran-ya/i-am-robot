@@ -84,4 +84,18 @@ public class PlayerActionUtil {
             player.setYRot((float) pitch);
         }
     }
+
+    public static void say(String message) {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null) {
+            player.connection.sendChat(message);
+        }
+    }
+
+    public static void command(String command) {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null) {
+            player.connection.sendCommand(command);
+        }
+    }
 }
