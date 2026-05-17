@@ -1,0 +1,17 @@
+{
+  "command.help.i_am_robot.help": "◇help: 显示这条消息",
+  "command.help.i_am_robot.line0": "--所有子命令的帮助--",
+  "command.help.i_am_robot.line1": "* 关于脚本语言的文档，请见 github",
+  "command.help.i_am_robot.list": "◇list [路径]: 浏览脚本目录中的文件（位于 config/i_am_robot/scripts）",
+  "command.help.i_am_robot.run": "◇run <路径>: 运行指定的脚本",
+  "command.help.i_am_robot.stop": "◇stop: 中止正在运行的脚本",
+  "command_feedback.i_am_robot.another_script_running": "另一个脚本仍在运行",
+  "command_feedback.i_am_robot.file_not_found": "未找到文件 xwx",
+  "command_feedback.i_am_robot.interrupt.fail": "没有需要中止的任务",
+  "command_feedback.i_am_robot.interrupt.succeed": "已中止",
+  "command_feedback.i_am_robot.io_exception": "读取目录时出错（此目录是否存在？）",
+  "message.i_am_robot.vm.exception": "运行脚本时出现异常：",
+  "message.i_am_robot.vm.halt": "脚本已完成运行",
+  "message.i_am_robot.vm.null_instruction": "[WARN] 程序已退出，因为没有找到 halt 或 return",
+  "message.i_am_robot.vm.syntax_error": "语法错误："
+}

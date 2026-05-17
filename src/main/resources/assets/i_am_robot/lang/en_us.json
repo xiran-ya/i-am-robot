@@ -1,14 +1,17 @@
 {
-  "command_feedback.i_am_robot.io_exception": "Error while reading the directory (Do they exist?)",
-  "command.help.i_am_robot.line0": "--Help for all sub commands--",
   "command.help.i_am_robot.help": "◇help: Show this message",
+  "command.help.i_am_robot.line0": "--Help for all sub commands--",
+  "command.help.i_am_robot.line1": "* For doc of the script language, see the doc on github",
   "command.help.i_am_robot.list": "◇list [path]: Browse files in the script folder (config/i_am_robot/scripts)",
-  "command_feedback.i_am_robot.file_not_found": "File not found! xwx",
+  "command.help.i_am_robot.run": "◇run <path>: Run specified script",
+  "command.help.i_am_robot.stop": "◇stop: Stop the current running script",
   "command_feedback.i_am_robot.another_script_running": "Another script is still running!",
-  "command_feedback.i_am_robot.interrupt.succeed": "Stoped",
+  "command_feedback.i_am_robot.file_not_found": "File not found! xwx",
   "command_feedback.i_am_robot.interrupt.fail": "No task to be stoped",
-  "message.i_am_robot.vm.halt": "Script has finished running",
-  "message.i_am_robot.vm.null_instruction": "[WARN] Script exited because no halt was found",
+  "command_feedback.i_am_robot.interrupt.succeed": "Stoped",
+  "command_feedback.i_am_robot.io_exception": "Error while reading the directory (Do they exist?)",
   "message.i_am_robot.vm.exception": "Exception while running script:",
+  "message.i_am_robot.vm.halt": "Script has finished running",
+  "message.i_am_robot.vm.null_instruction": "[WARN] Program exited because no halt or return was found",
   "message.i_am_robot.vm.syntax_error": "Syntax error: "
 }

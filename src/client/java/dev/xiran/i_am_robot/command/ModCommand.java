@@ -80,8 +80,11 @@ public class ModCommand {
     public static int help(CommandContext<FabricClientCommandSource> context) {
         FabricClientCommandSource source = context.getSource();
         source.sendFeedback(Component.translatable("command.help.i_am_robot.line0").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.BOLD));
+        source.sendFeedback(Component.translatable("command.help.i_am_robot.line1").withStyle(ChatFormatting.GRAY));
         source.sendFeedback(Component.translatable("command.help.i_am_robot.help").withStyle(ChatFormatting.GRAY));
         source.sendFeedback(Component.translatable("command.help.i_am_robot.list").withStyle(ChatFormatting.GRAY));
+        source.sendFeedback(Component.translatable("command.help.i_am_robot.run").withStyle(ChatFormatting.GRAY));
+        source.sendFeedback(Component.translatable("command.help.i_am_robot.stop").withStyle(ChatFormatting.GRAY));
         return 1;
     }
 
