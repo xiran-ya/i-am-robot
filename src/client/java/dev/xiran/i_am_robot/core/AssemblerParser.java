@@ -169,6 +169,28 @@ public class AssemblerParser {
                     );
                     VirtualMachine.INSTANCE.setVariable(tokens[3], result);
                 }
+                case "<<" -> {
+                    Object var0 = parseValue(tokens[1]);
+                    Object var1 = parseValue(tokens[2]);
+                    Object result = dualCalculate(var0, var1,
+                            (v0, v1) -> v0 << v1,
+                            (v0, v1) -> {throw new TypeException("Cannot perform \"<<\" on non-int value");},
+                            (v0, v1) -> {throw new TypeException("Cannot perform \"<<\" on non-int value");},
+                            (v0, v1) -> {throw new TypeException("Cannot perform \"<<\" on non-int value");}
+                    );
+                    VirtualMachine.INSTANCE.setVariable(tokens[3], result);
+                }
+                case ">>" -> {
+                    Object var0 = parseValue(tokens[1]);
+                    Object var1 = parseValue(tokens[2]);
+                    Object result = dualCalculate(var0, var1,
+                            (v0, v1) -> v0 >> v1,
+                            (v0, v1) -> {throw new TypeException("Cannot perform \">>\" on non-int value");},
+                            (v0, v1) -> {throw new TypeException("Cannot perform \">>\" on non-int value");},
+                            (v0, v1) -> {throw new TypeException("Cannot perform \">>\" on non-int value");}
+                    );
+                    VirtualMachine.INSTANCE.setVariable(tokens[3], result);
+                }
                 case "jumpIf" -> {
                     if (tokens.length == 3) {
                         Object condition = parseValue(tokens[1]);
