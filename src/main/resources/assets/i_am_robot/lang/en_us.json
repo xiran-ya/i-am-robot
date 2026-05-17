@@ -5,6 +5,8 @@
   "command.help.i_am_robot.list": "◇list [path]: Browse files in the script folder (config/i_am_robot/scripts)",
   "command_feedback.i_am_robot.file_not_found": "File not found! xwx",
   "command_feedback.i_am_robot.another_script_running": "Another script is still running!",
+  "command_feedback.i_am_robot.interrupt.succeed": "Stoped",
+  "command_feedback.i_am_robot.interrupt.fail": "No task to be stoped",
   "message.i_am_robot.vm.halt": "Script has finished running",
   "message.i_am_robot.vm.null_instruction": "[WARN] Script exited because no halt was found",
   "message.i_am_robot.vm.exception": "Exception while running script:",

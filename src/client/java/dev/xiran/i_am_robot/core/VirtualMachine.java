@@ -15,13 +15,14 @@ import java.util.regex.Pattern;
 
 public class VirtualMachine implements Runnable {
     static final VirtualMachine INSTANCE = new VirtualMachine();
-    private boolean running = false;
+    private volatile boolean running = false;
     private File script;
     private final String[] instructions = new String[1024];
     LinkedList<Integer> srcLineIndexes = new LinkedList<>();
     int programCounter;
     Deque<FunctionField> callStack = new ArrayDeque<>();
     private FileInputStream fileInputStream = null;
+    public Thread runThread;
 
     public static final Pattern commentPattern = Pattern.compile("//");
     public static final Pattern labelPattern = Pattern.compile("^label ");
@@ -29,10 +30,11 @@ public class VirtualMachine implements Runnable {
 
     @Override
     public void run() {
-        running = true;
-        programCounter = 0;
-        Arrays.fill(instructions, null);
         try {
+            running = true;
+            programCounter = 0;
+            Arrays.fill(instructions, null);
+
             try {
                 readScript();
             } catch (FileNotFoundException e) {
@@ -48,9 +50,11 @@ public class VirtualMachine implements Runnable {
             try {
                 while (AssemblerParser.evaluate(instructions[programCounter])) {
                     programCounter++;
+                    if (!running) return;
                 }
                 PlayerActionUtil.sendClientMessage(Component.translatable("message.i_am_robot.vm.halt").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
             } catch (Exception e) {
+                if (e instanceof InterruptedException e2) throw e2;
                 PlayerActionUtil.sendClientMessage(Component.translatable("message.i_am_robot.vm.exception").withStyle(ChatFormatting.RED));
                 String message = e.getClass().getSimpleName() + ": " + e.getMessage();
                 PlayerActionUtil.sendClientMessage(Component.literal(message).withStyle(ChatFormatting.RED));
@@ -65,6 +69,9 @@ public class VirtualMachine implements Runnable {
                 String stackTrace = String.format("at <main> (line %d)", srcLineIndexes.get(errLine));
                 PlayerActionUtil.sendClientMessage(Component.literal(stackTrace).withStyle(ChatFormatting.RED));
             }
+        } catch (InterruptedException e) {
+            //noinspection UnnecessaryReturnStatement
+            return;
         } finally {
             closeFile();
             callStack.clear();
@@ -109,6 +116,10 @@ public class VirtualMachine implements Runnable {
 
     public boolean isRunning() {
         return running;
+    }
+
+    public void stop() {
+        this.running = false;
     }
 
     public void setScript(File script) {

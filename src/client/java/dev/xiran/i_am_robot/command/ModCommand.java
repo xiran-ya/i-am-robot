@@ -30,6 +30,9 @@ public class ModCommand {
                         .executes(ModCommand::run)
                     )
                 )
+                .then(ClientCommandManager.literal("stop")
+                    .executes(ModCommand::stop)
+                )
             );
         });
     }
@@ -93,6 +96,7 @@ public class ModCommand {
             }
             vm.setScript(script);
             Thread thread = new Thread(vm);
+            vm.runThread = thread;
             thread.start();
             return 1;
         } else {
@@ -100,6 +104,19 @@ public class ModCommand {
             return -1;
         }
 
+    }
+
+    public static int stop(CommandContext<FabricClientCommandSource> context) {
+        VirtualMachine vm = VirtualMachine.getInstance();
+        if (vm.isRunning()) {
+            vm.stop();
+            vm.runThread.interrupt();
+            context.getSource().sendFeedback(Component.translatable("command_feedback.i_am_robot.interrupt.succeed").withStyle(ChatFormatting.GRAY));
+            return 1;
+        } else {
+            context.getSource().sendFeedback(Component.translatable("command_feedback.i_am_robot.interrupt.fail").withStyle(ChatFormatting.GRAY));
+            return 0;
+        }
     }
 
 }
